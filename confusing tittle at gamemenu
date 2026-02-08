@@ -1,0 +1,214 @@
+import pygame 
+from sys import exit
+
+pygame.init()
+
+screen = pygame.display.set_mode((500,400))
+clock = pygame.time.Clock()
+FPS = 60 
+
+# game state 
+menu = 'intro'
+
+# backgorund 
+floor = pygame.transform.scale(pygame.image.load('pixel/kitchen/fullfloor.png'),(500,400))
+intro = pygame.transform.scale(pygame.image.load('pixel/intro.png'),(500,400))
+
+# button
+play = pygame.transform.scale(pygame.image.load('pixel/play.png'),(200,50))
+playrect = play.get_rect(center=(130,230))
+
+Kbutton = pygame.transform.scale(pygame.image.load('pixel/kitchen.png'),(200,50))
+Krect = Kbutton.get_rect(center=(325,50))
+
+Dbutton = pygame.transform.scale(pygame.image.load('pixel/dining.png'),(200,50))
+Drect = Kbutton.get_rect(center=(125,375))
+
+Rreset = pygame.transform.scale(pygame.image.load('pixel/reset.png'),(200,50))
+Rrect = Kbutton.get_rect(center=(150,150))
+
+# main room 
+wall = pygame.transform.scale(pygame.image.load('pixel/wall.png'),(500,400))
+floor1 = pygame.transform.scale(pygame.image.load('pixel/floor.png'),(500,100))
+
+# kitchen 
+couner = pygame.transform.scale(pygame.image.load('pixel/kitchen/counters.png'),(300,150))
+openss = pygame.transform.scale(pygame.image.load('pixel/kitchen/open.png'),(215,50))
+slideopen = pygame.transform.scale(pygame.image.load('pixel/kitchen/slideopen.png'),(215,50))
+
+fridge = pygame.transform.scale(pygame.image.load('pixel/kitchen/fridge.png'),(100,200))
+stove = pygame.transform.scale(pygame.image.load('pixel/kitchen/stove.png'),(150,150))
+counters = pygame.transform.scale(pygame.image.load('pixel/kitchen/counters.png'),(160,150))
+
+deco = pygame.transform.scale(pygame.image.load('pixel/kitchen/deco.png'),(100,100))
+decorect = deco.get_rect(center=(150,30))
+
+# sink 
+sink = pygame.transform.scale(pygame.image.load('pixel/kitchen/sink.png'),(60,60))
+sinkrect = sink.get_rect(center=(35,72))
+
+endcouner = pygame.transform.scale(pygame.image.load('pixel/kitchen/endcouner.png'),(100,100))
+# food 
+indomie = pygame.transform.scale(pygame.image.load('pixel/indomie.png'),(80,50))
+indorect = indomie.get_rect(center=(200,305))
+
+rawindo = pygame.transform.scale(pygame.image.load('pixel/rawindomie.png'),(150,100))
+rawindorect = rawindo.get_rect(center=(250,220))
+
+F = [pygame.transform.scale(pygame.image.load('pixel/indomiebowl.png'),(100,100)),
+        pygame.transform.scale(pygame.image.load('pixel/emptybowl.png'),(100,100))]
+foodcount = 0 
+Food = F[foodcount]
+foodrect = Food.get_rect(center=(100,300))
+
+anim = [openss,slideopen]
+index = 0 
+cabinet = anim[index]
+cabinetrect = cabinet.get_rect(center=(245,305))
+
+foodready = False
+
+# supplier 
+suppliers = [pygame.transform.scale(pygame.image.load('pixel/empty.png'),(70,70)), 
+          pygame.transform.scale(pygame.image.load('pixel/water.png'),(70,70)),pygame.transform.scale(pygame.image.load('pixel/mie.png'),(70,70))]
+movess = 0 
+supply = suppliers[movess]
+supplyrect = supply.get_rect(center=(200,65))
+
+# something
+isopen = False
+can_click = True
+isclicked = False
+pan = False
+tap = False
+inside = False
+done = False
+emptyied = False
+emptybowls = False
+foodready = False
+foodcount = 0
+
+def gamemenuaw(): 
+    screen.blit(intro,(0,0))
+    screen.blit(play,playrect)
+
+def mainroom():
+    global foodcount, Food
+    screen.blit(wall,(0,0))
+    screen.blit(floor1,(0,300))
+    screen.blit(Kbutton,Krect)  
+    if foodready: 
+        screen.blit(Food,foodrect) 
+        foodcount = 0
+        Food = F[foodcount] 
+        
+        if emptybowls: 
+            foodcount = 1 
+            Food = F[foodcount]        
+            
+def ilovekitchen():
+    global cabinet, clicked, supply, done, foodready
+    screen.blit(floor,(0,0))
+    screen.blit(couner,(100,200))
+    screen.blit(fridge,(400,0))
+    screen.blit(stove,(90,40))
+    screen.blit(counters,(240,40))
+    screen.blit(deco,decorect)
+    screen.blit(endcouner,(-10,70))
+    screen.blit(sink,sinkrect)
+    screen.blit(Dbutton,Drect)
+
+    if isopen:
+        index = 1 
+    else: 
+        index = 0
+    cabinet = anim[index]
+
+    screen.blit(cabinet, cabinetrect)
+
+    if isopen:
+        screen.blit(indomie, indorect)
+    if isclicked: 
+        screen.blit(rawindo,rawindorect)
+    if pan: 
+        movess = 0
+        screen.blit(supply,supplyrect)
+        if tap: 
+            movess = 1 
+            supply = suppliers[movess]
+            if inside: 
+                movess = 2 
+                supply = suppliers[movess]
+                done = True
+
+                if emptyied: 
+                    movess = 0 
+                    supply = suppliers[movess]
+                    foodready = True
+def reset_game():
+    global isopen,can_click,isclicked,pan,tap,inside,done,emptyied,emptybowls,foodready,foodcount
+    isopen = False
+    can_click = True
+    isclicked = False
+    pan = False
+    tap = False
+    inside = False
+    done = False
+    emptyied = False
+    emptybowls = False
+    foodready = False
+    foodcount = 0
+def resetbutton():
+    screen.blit(Rreset,Rrect)
+
+while True:
+    dt = clock.tick(FPS)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            exit()
+
+        if event.type == pygame.MOUSEBUTTONDOWN and can_click:
+            if isopen and indorect.collidepoint(event.pos):
+                isclicked = True
+                can_click = False
+
+            elif done and supplyrect.collidepoint(event.pos): 
+                emptyied = True
+
+            elif cabinetrect.collidepoint(event.pos):
+                isopen = not isopen
+                can_click = False
+            
+            elif decorect.collidepoint(event.pos): 
+                pan = True
+            elif sinkrect.collidepoint(event.pos): 
+                tap = True
+            elif rawindorect.collidepoint(event.pos): 
+                inside = True
+
+            elif playrect.collidepoint(event.pos): 
+                menu = 'main room'
+            elif Drect.collidepoint(event.pos):
+                menu = 'main room'
+            elif Krect.collidepoint(event.pos):
+                menu = 'kitchen'
+            elif Rrect.collidepoint(event.pos):
+                reset_game()
+                menu = 'main room'
+
+            elif foodrect.collidepoint(event.pos):
+                emptybowls = True
+    
+        if event.type == pygame.MOUSEBUTTONUP:
+            can_click = True
+
+    if menu == 'intro':    
+        gamemenuaw()
+    elif menu == 'main room':
+        mainroom()
+    elif menu == 'kitchen':
+        ilovekitchen()
+    
+    pygame.display.flip()
